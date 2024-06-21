@@ -36,7 +36,7 @@ public_users.get("/isbn/:isbn", async function (req, res) {
   return res.status(404).json({ message: "Invalid ISBN" });
 });
 
-public_users.get("/author/:author", async function (req, res) {
+public_users.get("/author/:author", function (req, res) {
   const validSearch = {};
   const authorName = req.params.author.toLowerCase();
   const dataPromise = new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ public_users.get("/author/:author", async function (req, res) {
   });
 });
 
-public_users.get("/title/:title", async function (req, res) {
+public_users.get("/title/:title", function (req, res) {
   const validSearch = {};
   const bookTitle = req.params.title.toLowerCase();
   const dataPromise = new Promise((resolve, reject) => {
