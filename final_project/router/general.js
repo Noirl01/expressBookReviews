@@ -22,72 +22,62 @@ public_users.post("/register", (req, res) => {
   }
 });
 
-// Get the book list available in the shop
-public_users.get("/", function (req, res) {
-  return res.status(200).json(books);
+public_users.get("/", async function (req, res) {
+  const booksList = await books;
+  return res.status(200).json(booksList);
 });
 
-// Get book details based on ISBN
-public_users.get("/isbn/:isbn", function (req, res) {
+public_users.get("/isbn/:isbn", async function (req, res) {
   const ISBN = parseInt(req.params.isbn);
-  if (books[ISBN]) {
-    return res.status(200).json(books[ISBN]);
+  const booksList = await books;
+  if (booksList[ISBN]) {
+    return res.status(200).json(booksList[ISBN]);
   }
   return res.status(404).json({ message: "Invalid ISBN" });
 });
 
-public_users.get("/author/:author", function (req, res) {
+public_users.get("/author/:author", async function (req, res) {
   const validSearch = {};
   const authorName = req.params.author.toLowerCase();
-  for (const book in books) {
-    if (books[book].author.toLowerCase().includes(authorName)) {
-      validSearch[book] = {
-        author: books[book].author,
-        title: books[book].title,
-        reviews: books[book].reviews,
-      };
+  const dataPromise = new Promise((resolve, reject) => {
+    if (books) resolve(books);
+    else reject({ message: "Error while retrieving data" });
+  }).then((data) => {
+    for (const book in data) {
+      if (data[book].author.toLowerCase().includes(authorName)) {
+        validSearch[book] = {
+          author: data[book].author,
+          title: data[book].title,
+          reviews: data[book].reviews,
+        };
+      }
     }
-  }
-  return res.status(200).json(validSearch);
+    return res.status(200).json(validSearch);
+  });
 });
 
-// Get all books based on title
-public_users.get("/title/:title", function (req, res) {
+public_users.get("/title/:title", async function (req, res) {
   const validSearch = {};
   const bookTitle = req.params.title.toLowerCase();
-  for (const book in books) {
-    if (books[book].title.toLowerCase().includes(bookTitle)) {
-      validSearch[book] = {
-        author: books[book].author,
-        title: books[book].title,
-        reviews: books[book].reviews,
-      };
+  const dataPromise = new Promise((resolve, reject) => {
+    if (books) resolve(books);
+    else reject({ message: "Error while retrieving data" });
+  }).then((data) => {
+    for (const book in data) {
+      if (data[book].title.toLowerCase().includes(bookTitle)) {
+        validSearch[book] = {
+          author: data[book].author,
+          title: data[book].title,
+          reviews: data[book].reviews,
+        };
+      }
     }
-  }
-  return res.status(200).json(validSearch);
+    return res.status(200).json(validSearch);
+  });
 });
 
 public_users.get("/review/:isbn", function (req, res) {
   return res.status(200).json(books[req.params.isbn].reviews);
 });
 
-const getAllBooks = async () => {
-  const data = await axios.get("http://localhost:5000/");
-  return data;
-};
-
-const getBookByISBN = async (isbn) => {
-  const data = await axios.get(`http://localhost:5000/isbn/${isbn}`);
-  return data;
-};
-
-const getBookByAuthor = async (author) => {
-  const data = await axios.get(`http://localhost:5000/author/${author}`);
-  return data;
-};
-
-const getBookByTitle = async (title) => {
-  const data = await axios.get(`http://localhost:5000/title/${title}`);
-  return data;
-};
 module.exports.general = public_users;
